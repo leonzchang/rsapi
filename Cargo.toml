@@ -10,3 +10,9 @@ actix-rt = "2.2"
 actix-web = "=4.0.0-beta.5"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1" } 
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "1.0"
+
+[build-dependencies]
+vergen = "5"
+
