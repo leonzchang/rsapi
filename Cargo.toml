@@ -11,7 +11,15 @@ actix-web = "=4.0.0-beta.5"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1" } 
 chrono = { version = "0.4", features = ["serde"] }
-thiserror = "1.0"
+thiserror = "1"
+anyhow = "1"
+reqwest = { version = "0.11.1", features = ["json"] }
+futures = "=0.3.12"
+sqlx = { version = "0.5.1", features = ['runtime-tokio-rustls', 'postgres', 'macros'] }
+log = "0.4"
+async-trait = "0.1.52"
+structopt = "0.3.20"
+tokio = { version = "1", features = ["signal", "rt-multi-thread", "net", "time", "macros"] }
 
 [build-dependencies]
 vergen = "5"

@@ -14,17 +14,16 @@ semver:
 ###########################################################
 ### Database
 
-# migrate:
-# 	cd ${ROOT_DIR}/oracle-core ; \
-# 	source ${ROOT_DIR}/scripts/.env_local ; \
-# 	export DATABASE_URL=$$DATABASE_URL; \
-# 	sqlx db create ; \
-# 	sqlx migrate --source migrations run
+migrate:
+	source ${ROOT_DIR}/env/.env ; \
+	export DATABASE_URL=$$DATABASE_URL; \
+	sqlx db create ; \
+	sqlx migrate --source migrations run
 
 ###########################################################
 ### Local Deployment
 
-local: local-pg
+local: local-pg migrate
 	source ${ROOT_DIR}/env/.env ; \
 	RUST_LOG=info cargo run --release --bin rustapi ; \
 
