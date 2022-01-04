@@ -2,7 +2,7 @@ use crate::table::SqlSource;
 use crate::utils::actix_ext::SafeData;
 use crate::{app::service, table};
 use actix_web::{error::ResponseError, get, http::StatusCode, post, web, HttpResponse};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use thiserror;
 
@@ -66,16 +66,16 @@ pub async fn handle_home(query: web::Path<String>) -> Result<HttpResponse, Error
     Ok(HttpResponse::Ok().json(result))
 }
 
-#[get("/person/{person_id}/{name}")]
+#[get("/person/{name}")]
 pub async fn handle_post_person_test(
     pool: SafeData<PgPool>,
-    query: web::Path<(i32, String)>,
+    query: web::Path<String>,
 ) -> Result<HttpResponse, Error> {
-    let (id, name) = query.into_inner();
+    let name = query.into_inner();
 
-    pool.update_data(id, name).await?;
+    let id = pool.update_data(name).await?;
 
-    Ok(HttpResponse::Ok().json("ok"))
+    Ok(HttpResponse::Ok().json(serde_json::json!({ "person_id": id })))
 }
 
 #[get("/persons")]
@@ -99,15 +99,19 @@ pub async fn handle_get_persons(conns: SafeData<PgPool>) -> Result<HttpResponse,
     Ok(HttpResponse::Ok().json(result))
 }
 
+#[derive(Serialize, Deserialize)]
+struct PersonData {
+    person_name: String,
+}
 //TODO post method
-#[post("/person/{person_id}/{name}")]
+#[post("/person")]
 pub async fn handle_post_person(
     pool: SafeData<PgPool>,
-    query: web::Path<(i32, String)>,
+    data: web::Json<PersonData>,
 ) -> Result<HttpResponse, Error> {
-    let (id, name) = query.into_inner();
+    let name = query.into_inner();
 
-    pool.post_data(&reqwest::Client::new(), id, name).await?;
+    let id = pool.post_data(name).await?;
 
-    Ok(HttpResponse::Ok().json("ok"))
+    Ok(HttpResponse::Ok().json(serde_json::json!({ "person_id": id })))
 }

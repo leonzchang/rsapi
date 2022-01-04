@@ -1,6 +1,6 @@
 use sqlx::{postgres::PgRow, PgPool, Row};
 
-use crate::utils::ensure_affected;
+// use crate::utils::ensure_affected;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -13,25 +13,32 @@ pub enum Error {
 
 #[async_trait::async_trait]
 pub trait SqlSource {
-    async fn update_data(self, person_id: i32, person_name: String) -> Result<(), Error>;
+    async fn update_data(self, person_name: String) -> Result<i32, Error>;
 
     async fn get_all_data(self) -> Result<Vec<(i32, String)>, Error>;
+
+    async fn post_data(self, person_name: String) -> Result<i32, Error>;
 }
 
 #[async_trait::async_trait]
 impl SqlSource for &PgPool {
-    async fn update_data(self, person_id: i32, person_name: String) -> Result<(), Error> {
-        set_data(self, person_id, person_name).await?;
+    async fn update_data(self, person_name: String) -> Result<i32, Error> {
+        let result = set_data(self, person_name).await?;
 
-        Ok(())
+        Ok(result)
     }
 
     async fn get_all_data(self) -> Result<Vec<(i32, String)>, Error> {
         get_all(self).await.map_err(Error::Database)
     }
+
+    async fn post_data(self, person_name: String) -> Result<i32, Error> {
+        let result = set_data(self, person_name).await?;
+
+        Ok(result)
+    }
 }
 
-//get_all 去 query database 拿到 rng_data table 中 rng, sig, chain_id 三個欄位的資料
 async fn get_all(pg_pool: &PgPool) -> sqlx::Result<Vec<(i32, String)>> {
     sqlx::query(
         r#"
@@ -43,15 +50,28 @@ async fn get_all(pg_pool: &PgPool) -> sqlx::Result<Vec<(i32, String)>> {
     .await
 }
 
-async fn set_data(pg_pool: &PgPool, person_id: i32, person_name: String) -> sqlx::Result<()> {
+async fn set_data(pg_pool: &PgPool, person_name: String) -> Result<i32, Error> {
     sqlx::query(
         r#"
-        INSERT INTO info (person_id, person_name) VALUES ($1, $2)
-    "#,
+            INSERT INTO info (person_name) VALUES ($1) RETURNING person_id
+        "#,
     )
-    .bind(person_id)
     .bind(person_name)
-    .execute(pg_pool)
-    .await
-    .and_then(ensure_affected(1))
+    .map(|row: PgRow| Ok(row.get::<i32, _>(0)))
+    .fetch_one(pg_pool)
+    .await?
+    // .and_then(ensure_affected(1))
+}
+
+async fn add_data(pg_pool: &PgPool, person_name: String) -> Result<i32, Error> {
+    sqlx::query(
+        r#"
+            INSERT INTO info (person_name) VALUES ($1) RETURNING person_id
+        "#,
+    )
+    .bind(person_name)
+    .map(|row: PgRow| Ok(row.get::<i32, _>(0)))
+    .fetch_one(pg_pool)
+    .await?
+    // .and_then(ensure_affected(1))
 }

@@ -1,15 +1,19 @@
 use sqlx::{postgres::PgQueryResult, Result};
+use std::io::{Error, ErrorKind};
 
-pub fn ensure_affected(count: u64) -> impl FnOnce(PgQueryResult) -> Result<()> {
-    move |pg_done| {
-        if pg_done.rows_affected() == count {
-            // log::info!("fffffffffffffffffffffff {:?}", pg_done.rows_affected());
-            Ok(())
-        } else {
-            Err(sqlx::Error::RowNotFound)
-        }
-    }
-}
+// pub fn ensure_affected(count: u64) -> impl FnOnce(PgQueryResult) -> Result<()> {
+//     move |pg_done| {
+//         if pg_done.rows_affected() == count {
+//             // log::info!("fffffffffffffffffffffff {:?}", pg_done.rows_affected());
+//             Ok(())
+//         } else {
+//             Err(sqlx::Error::Io(Error::new(
+//                 ErrorKind::Other,
+//                 "Error communicating with the database.",
+//             )))
+//         }
+//     }
+// }
 
 pub mod actix_ext {
     use std::any;
