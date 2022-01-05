@@ -46,7 +46,7 @@ pub fn routes() -> impl FnOnce(&mut web::ServiceConfig) {
                 .service(handle_test)
                 .service(handle_home)
                 .service(handle_get_persons)
-                .service(handle_post_person_test),
+                .service(handle_post_person),
         );
     }
 }
@@ -99,17 +99,19 @@ pub async fn handle_get_persons(conns: SafeData<PgPool>) -> Result<HttpResponse,
     Ok(HttpResponse::Ok().json(result))
 }
 
-#[derive(Serialize, Deserialize)]
-struct PersonData {
+#[derive(Deserialize, Debug)]
+pub struct PersonData {
     person_name: String,
 }
-//TODO post method
+
 #[post("/person")]
 pub async fn handle_post_person(
     pool: SafeData<PgPool>,
     data: web::Json<PersonData>,
 ) -> Result<HttpResponse, Error> {
-    let name = query.into_inner();
+    //TODO logger env_logger
+    log::info!("test {:?}", data);
+    let name = data.person_name.clone();
 
     let id = pool.post_data(name).await?;
 
