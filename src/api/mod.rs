@@ -85,7 +85,6 @@ pub async fn handle_get_persons(conns: SafeData<PgPool>) -> Result<HttpResponse,
         person_id: i32,
         person_name: String,
     }
-
     let result = conns
         .get_all_data()
         .await?

@@ -13,6 +13,8 @@ pub struct Opts {
 }
 
 pub fn run(opts: Opts) -> Result<(), std::io::Error> {
+    env_logger::init();
+
     let Opts { database_url } = opts;
     let system = System::new();
     let rt = tokio::runtime::Builder::new_multi_thread()
